@@ -75,3 +75,6 @@ manual trigger  → Validate → Deploy to selected target + Run pipeline
 ## 📝 License
 
 MIT
+
+---
+*Deployed with GitHub Actions CI/CD*
