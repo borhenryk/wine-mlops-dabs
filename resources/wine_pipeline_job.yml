@@ -1,0 +1,67 @@
+resources:
+  jobs:
+    wine_training_pipeline:
+      name: "[${bundle.target}] Wine MLOps Training Pipeline"
+      description: "End-to-end wine quality ML pipeline: data loading, training, validation, and deployment"
+      schedule:
+        quartz_cron_expression: "0 0 8 * * ?"  # Daily at 8 AM
+        timezone_id: Europe/Berlin
+        pause_status: PAUSED
+      email_notifications:
+        on_failure:
+          - ${workspace.current_user.userName}
+      tasks:
+        - task_key: load_data
+          notebook_task:
+            notebook_path: ../src/wine_mlops/01_load_data.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+            source: WORKSPACE
+          job_cluster_key: ml_cluster
+
+        - task_key: train_model
+          depends_on:
+            - task_key: load_data
+          notebook_task:
+            notebook_path: ../src/wine_mlops/02_train_model.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              experiment_name: ${var.experiment_name}
+            source: WORKSPACE
+          job_cluster_key: ml_cluster
+
+        - task_key: validate_model
+          depends_on:
+            - task_key: train_model
+          notebook_task:
+            notebook_path: ../src/wine_mlops/03_validate_model.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+            source: WORKSPACE
+          job_cluster_key: ml_cluster
+
+        - task_key: deploy_model
+          depends_on:
+            - task_key: validate_model
+          notebook_task:
+            notebook_path: ../src/wine_mlops/04_deploy_model.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+            source: WORKSPACE
+          job_cluster_key: ml_cluster
+
+      job_clusters:
+        - job_cluster_key: ml_cluster
+          new_cluster:
+            spark_version: 14.3.x-cpu-ml-scala2.12
+            node_type_id: i3.xlarge
+            num_workers: 0
+            spark_conf:
+              spark.master: "local[*, 4]"
+              spark.databricks.cluster.profile: singleNode
+            custom_tags:
+              ResourceClass: SingleNode

@@ -1,0 +1,45 @@
+bundle:
+  name: wine_mlops
+
+variables:
+  catalog:
+    description: Unity Catalog name
+    default: mcp_dabs_test
+  schema:
+    description: Schema name for ML assets
+    default: wine_mlops_dev
+  experiment_name:
+    description: MLflow experiment name
+    default: /Shared/wine_mlops_experiment
+
+workspace:
+  host: https://dbc-cc0aa83c-12fd.cloud.databricks.com
+
+include:
+  - resources/*.yml
+
+targets:
+  dev:
+    mode: development
+    default: true
+    variables:
+      catalog: mcp_dabs_test
+      schema: wine_mlops_dev
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+
+  staging:
+    mode: production
+    variables:
+      catalog: mcp_dabs_test
+      schema: wine_mlops_staging
+    workspace:
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
+
+  prod:
+    mode: production
+    variables:
+      catalog: mcp_dabs_test
+      schema: wine_mlops_prod
+    workspace:
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
