@@ -18,7 +18,6 @@ resources:
               catalog: ${var.catalog}
               schema: ${var.schema}
             source: WORKSPACE
-          job_cluster_key: ml_cluster
 
         - task_key: train_model
           depends_on:
@@ -30,7 +29,6 @@ resources:
               schema: ${var.schema}
               experiment_name: ${var.experiment_name}
             source: WORKSPACE
-          job_cluster_key: ml_cluster
 
         - task_key: validate_model
           depends_on:
@@ -41,7 +39,6 @@ resources:
               catalog: ${var.catalog}
               schema: ${var.schema}
             source: WORKSPACE
-          job_cluster_key: ml_cluster
 
         - task_key: deploy_model
           depends_on:
@@ -52,16 +49,3 @@ resources:
               catalog: ${var.catalog}
               schema: ${var.schema}
             source: WORKSPACE
-          job_cluster_key: ml_cluster
-
-      job_clusters:
-        - job_cluster_key: ml_cluster
-          new_cluster:
-            spark_version: 14.3.x-cpu-ml-scala2.12
-            node_type_id: i3.xlarge
-            num_workers: 0
-            spark_conf:
-              spark.master: "local[*, 4]"
-              spark.databricks.cluster.profile: singleNode
-            custom_tags:
-              ResourceClass: SingleNode
